@@ -6,7 +6,11 @@ import {
   ConnectionAuthorizationFailedError,
   isConnectionAuthorizationFailedError,
 } from "#public/connections/errors.js";
-import { principalKey, resolveConnectionPrincipal } from "#runtime/connections/principal.js";
+import {
+  principalKey,
+  resolveConnectionPrincipal,
+  sessionPrincipalKey,
+} from "#runtime/connections/principal.js";
 import type { AuthorizationDefinition } from "#runtime/connections/types.js";
 
 function ctxWithAuth(current: SessionAuthContext | null): ContextContainer {
@@ -58,6 +62,16 @@ describe("principalKey", () => {
 
   it("keys an issuerless native Vercel user by its user id", () => {
     expect(principalKey({ id: "user_123", type: "user" })).toBe("user:user_123");
+  });
+});
+
+describe("sessionPrincipalKey", () => {
+  it("uses the issuer and stable principal id, independent of authenticator", () => {
+    const oidc = userAuth({ authenticator: "oidc", issuer: "idp", principalId: "u1" });
+    const custom = userAuth({ authenticator: "custom", issuer: "idp", principalId: "u1" });
+
+    expect(sessionPrincipalKey(oidc)).toBe("user:idp:u1");
+    expect(sessionPrincipalKey(custom)).toBe(sessionPrincipalKey(oidc));
   });
 });
 

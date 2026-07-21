@@ -37,6 +37,15 @@ export function principalKey(principal: ConnectionPrincipal): string {
   return `user:${principal.issuer}:${principal.id}`;
 }
 
+/** Returns the established issuer-scoped identity key for a session caller. */
+export function sessionPrincipalKey(auth: SessionAuthContext): string {
+  return principalKey({
+    id: auth.principalId,
+    issuer: auth.issuer ?? auth.authenticator,
+    type: "user",
+  });
+}
+
 /**
  * Resolves the {@link ConnectionPrincipal} for one connection.
  *
